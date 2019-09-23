@@ -50,14 +50,17 @@ class KubeObject(object):
       # From https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#get:
       # "To use a specific API version, fully-qualify the resource,
       # version, and group (for example: 'jobs.v1.batch/myjob')."
-      api_version_parts = data["apiVersion"].split("/")
-      api_version_parts.reverse()
-      if len(api_version_parts) < 2:
-        api_version_parts.append("") # top-level group is blank
-      kind = kind + "." + ".".join(api_version_parts)
-      name = data["metadata"]["name"]
-      namespace = data["metadata"].get("namespace", namespace)
-      yield cls(namespace, kind, name, data)
+      if 'apiVersion' in data.keys():
+        api_version_parts = data["apiVersion"].split("/")
+        api_version_parts.reverse()
+        if len(api_version_parts) < 2:
+          api_version_parts.append("") # top-level group is blank
+        kind = kind + "." + ".".join(api_version_parts)
+        name = data["metadata"]["name"]
+        namespace = data["metadata"].get("namespace", namespace)
+        yield cls(namespace, kind, name, data)
+      else:
+        print ("Object has no apiVersion!" + data['kind'] + "/" + data['metadata']['name'])
 
   @property
   def namespaced_name(self):
